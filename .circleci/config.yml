@@ -116,6 +116,7 @@ jobs:
 
       - run: cd ../build
       - run: set +e; RSPAMD_INSTALLROOT=../install sudo -E robot -x xunit.xml --exclude isbroken ../project/test/functional/cases; echo "export RETURN_CODE=$?" >> $BASH_ENV
+      - run: find ~ -name '*.gcda' -o -name '*.gcno' -ls | tee find.out
 
       - *capture_coverage_data
 
@@ -132,6 +133,8 @@ jobs:
           path: log.html
       - store_artifacts:
           path: report.html
+      - store_artifacts:
+          path: find.out
 
       - run: mkdir -p test-results; mv xunit.xml test-results
       - store_test_results:
