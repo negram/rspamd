@@ -34,8 +34,8 @@ references:
         if [ -f ~/project/coverage.rspamd-test.info ] && [ -f ~/project/coverage.functional.info ]; then
             sudo apt-get install -qq lcov
             lcov -a ~/project/coverage.rspamd-test.info -t rspamd-test -a ~/project/coverage.functional.info -t functional -o coverage.info
+            sudo apt-get install -qq python-pip luarocks
             gem install coveralls-lcov
-            sudo apt-get install python-pip
             sudo pip install cpp-coveralls
             sudo luarocks install luacov-coveralls
             cd ~/project
