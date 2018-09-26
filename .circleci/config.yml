@@ -17,8 +17,8 @@ references:
         
         # further, these files will be saved in cache and used in "send-coverage" step
         # see "merge_and_upload_coverage_data" and "save_cache" records
-        lcov --no-external -b ../project -d ../project -c --output-file coverage.${CIRCLE_JOB}.info
-        coveralls --lcov-file coverage.${CIRCLE_JOB}.info --dump coverage.${CIRCLE_JOB}.dump
+        # lcov --no-external -b ../project -d ../project -c --output-file coverage.${CIRCLE_JOB}.info
+        coveralls --dump coverage.${CIRCLE_JOB}.dump
         
 
   - &capture_lua_coverage_data
@@ -96,7 +96,7 @@ jobs:
             - coverage.rspamd-test.info
             - coverage.rspamd-test.dump
             - luacov.stats.out
-      - run: find ~ -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' -ls | tee find.out
+      - run: find ~ \( -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' \) -ls | tee find.out
 
       - run: (exit $RETURN_CODE)
 
@@ -139,7 +139,7 @@ jobs:
       - run: mkdir -p test-results; mv xunit.xml test-results
       - store_test_results:
           path: test-results
-      - run: find ~ -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' -ls | tee find.out
+      - run: find ~ \( -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' \) -ls | tee find.out
 
       - run: (exit $RETURN_CODE)
 
