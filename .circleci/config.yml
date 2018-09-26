@@ -11,9 +11,13 @@ references:
       name: Capturing coverage data
       command: |
         set -e
-        sudo apt-get install -qq lcov
+        sudo apt-get install -qq lcov python-pip
         gem install coveralls-lcov
+        sudo pip install cpp-coveralls
+        
         lcov --no-external -b ../project -d ../project -c --output-file coverage.${CIRCLE_JOB}.info
+        coveralls --lcov-file coverage.${CIRCLE_JOB}.info --dump coverage.${CIRCLE_JOB}.dump
+        
 
   - &capture_lua_coverage_data
     run:
@@ -33,15 +37,13 @@ references:
         set -e
         if [ -f ~/project/coverage.rspamd-test.info ] && [ -f ~/project/coverage.functional.info ]; then
             sudo apt-get install -qq lcov
-            lcov -a ~/project/coverage.rspamd-test.info -t rspamd-test -a ~/project/coverage.functional.info -t functional -o coverage.info
             sudo apt-get install -qq python-pip luarocks
-            gem install coveralls-lcov
             sudo pip install cpp-coveralls
             sudo luarocks install luacov-coveralls
+
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
-              coveralls --lcov-file coverage.info --dump coveralls.dump
-              luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coveralls.dump -m --root=../project
+              luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coverage.rspamd-test.dump -j coverage.functional.dump -m --root=../project
             fi
         fi
 
@@ -90,6 +92,7 @@ jobs:
           key: coverage-rspamd-test-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - coverage.rspamd-test.info
+            - coverage.rspamd-test.dump
             - luacov.stats.out
 
       - run: (exit $RETURN_CODE)
@@ -121,6 +124,7 @@ jobs:
           key: coverage-functional-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - coverage.functional.info
+            - coverage.functional.dump
 
       - store_artifacts:
           path: output.xml
@@ -159,6 +163,16 @@ jobs:
           at: *workspace_root
       - restore_cache:
           key: coverage-rspamd-test-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+      - restore_cache:
+          key: coverage-functional-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+      - store_artifacts:
+          path: coverage.functional.dump
+      - store_artifacts:
+          path: coverage.functional.info
+      - store_artifacts:
+          path: coverage.rspamd-test.dump
+      - store_artifacts:
+          path: coverage.functional.dump
 
       - *restore_coverage_data
       - *merge_and_upload_coverage_data
