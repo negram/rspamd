@@ -15,6 +15,8 @@ references:
         gem install coveralls-lcov
         sudo pip install cpp-coveralls
         
+        # further, these files will be saved in cache and used in "send-coverage" step
+        # see "merge_and_upload_coverage_data" and "save_cache" records
         lcov --no-external -b ../project -d ../project -c --output-file coverage.${CIRCLE_JOB}.info
         coveralls --lcov-file coverage.${CIRCLE_JOB}.info --dump coverage.${CIRCLE_JOB}.dump
         
@@ -43,7 +45,7 @@ references:
 
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
-              luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coverage.rspamd-test.dump -j coverage.functional.dump -m --root=../project
+              luacov-coveralls --build-number ${CIRCLE_BUILD_NUM} -t ${COVERALLS_REPO_TOKEN} -j coverage.rspamd-test.dump -j coverage.functional.dump -m --root=../project
             fi
         fi
 
@@ -94,6 +96,7 @@ jobs:
             - coverage.rspamd-test.info
             - coverage.rspamd-test.dump
             - luacov.stats.out
+      - run: find ~ -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' -ls | tee find.out
 
       - run: (exit $RETURN_CODE)
 
@@ -116,7 +119,6 @@ jobs:
 
       - run: cd ../build
       - run: set +e; RSPAMD_INSTALLROOT=../install sudo -E robot -x xunit.xml --exclude isbroken ../project/test/functional/cases; echo "export RETURN_CODE=$?" >> $BASH_ENV
-      - run: find ~ -name '*.gcda' -o -name '*.gcno' -ls | tee find.out
 
       - *capture_coverage_data
 
@@ -133,12 +135,11 @@ jobs:
           path: log.html
       - store_artifacts:
           path: report.html
-      - store_artifacts:
-          path: find.out
 
       - run: mkdir -p test-results; mv xunit.xml test-results
       - store_test_results:
           path: test-results
+      - run: find ~ -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' -ls | tee find.out
 
       - run: (exit $RETURN_CODE)
 
