@@ -24,8 +24,6 @@ references:
 
   - &restore_coverage_data
     restore_cache:
-      key: coverage-rspamd-test-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-    restore_cache:
       key: coverage-functional-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
   - &merge_and_upload_coverage_data
@@ -158,6 +156,8 @@ jobs:
     steps:
       - attach_workspace:
           at: *workspace_root
+      - restore_cache:
+          key: coverage-rspamd-test-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
       - *restore_coverage_data
       - *merge_and_upload_coverage_data
