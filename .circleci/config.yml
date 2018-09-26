@@ -35,6 +35,7 @@ references:
             sudo apt-get install -qq lcov
             lcov -a ~/project/coverage.rspamd-test.info -t rspamd-test -a ~/project/coverage.functional.info -t functional -o coverage.info
             gem install coveralls-lcov
+            sudo apt-get install python-pip
             sudo pip install cpp-coveralls
             sudo luarocks install luacov-coveralls
             cd ~/project
