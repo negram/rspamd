@@ -313,7 +313,7 @@ def collect_lua_coverage():
 
         if (os.path.isfile(report_file)):
             shutil.move(report_file, old_report)
-            p = subprocess.Popen(["luacov-coveralls", "-o", report_file, "-j", old_report, "-m", "--dryrun"], 
+            p = subprocess.Popen(["luacov-coveralls", "-o", report_file, "-j", old_report, "--merge", "--dryrun"], 
                                  stdout = subprocess.PIPE, stderr= subprocess.PIPE)
             output,error = p.communicate()
 

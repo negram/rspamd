@@ -48,7 +48,8 @@ references:
               # collect Lua coverage (from luacov.stats.out) and merge it with C-coverage (in coveralls.dump)
               # and functional tests coverage (collected into lua_coverage_report.json)
               # and finally upload it into coveralls.io
-              luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coverage.functional.dump -j coverage.rspamd-test.dump -j lua_coverage_report.json -m --root=../project
+              # luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coverage.functional.dump -j coverage.rspamd-test.dump -j lua_coverage_report.json -m --root=../project
+              test/functional/util/merge_coveralls.py --input coverage.functional.dump coverage.rspamd-test.dump lua_coverage_report.json unit_test_lua.json --output out.josn --root ../project --token=${COVERALLS_REPO_TOKEN} 
             fi
         fi
 
@@ -88,6 +89,7 @@ jobs:
       - run: cd ../build
       - run: make rspamd-test -j`nproc`
       - run: set +e; test/rspamd-test -p /rspamd/lua; echo "export RETURN_CODE=$?" >> $BASH_ENV
+      - run: luacov-coveralls -o unit_test_lua.json --dryrun
 
       - *capture_coverage_data
       #- *capture_lua_coverage_data
@@ -97,7 +99,7 @@ jobs:
           key: coverage-rspamd-test-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - coverage.rspamd-test.dump
-            - luacov.stats.out
+            - unit_test_lua.json
       - run: find ~ \( -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' \) -ls | tee find.out
 
       - run: (exit $RETURN_CODE)
