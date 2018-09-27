@@ -37,20 +37,18 @@ references:
       name: Merging and uploading coverage data
       command: |
         set -e
-        if [ -f ~/project/coverage.rspamd-test.info ] && [ -f ~/project/coverage.functional.info ]; then
+        if [ -f ~/project/coverage.rspamd-test.dump ] && [ -f ~/project/coverage.functional.dump ]; then
             sudo apt-get install -qq lcov
             sudo apt-get install -qq python-pip luarocks
-            sudo pip install cpp-coveralls
             sudo luarocks install luacov-coveralls
 
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
               # collect C coverage
-              coveralls --lcov-file coverage.info --dump coveralls.dump
               # collect Lua coverage (from luacov.stats.out) and merge it with C-coverage (in coveralls.dump)
               # and functional tests coverage (collected into lua_coverage_report.json)
               # and finally upload it into coveralls.io
-              luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coveralls.dump -j lua_coverage_report.json -m --root=../project
+              luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coverage.functional.dump -j coverage.rspamd-test.dump -j lua_coverage_report.json -m --root=../project
             fi
         fi
 
@@ -98,7 +96,6 @@ jobs:
       - save_cache:
           key: coverage-rspamd-test-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
-            - coverage.rspamd-test.info
             - coverage.rspamd-test.dump
             - luacov.stats.out
       - run: find ~ \( -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' \) -ls | tee find.out
@@ -132,7 +129,7 @@ jobs:
       - save_cache:
           key: coverage-functional-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
-            - coverage.functional.info
+            - coverage.functional.dump
             - lua_coverage_report.json
 
       - store_artifacts:
