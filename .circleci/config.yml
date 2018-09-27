@@ -45,7 +45,12 @@ references:
 
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
-              luacov-coveralls --build-number ${CIRCLE_BUILD_NUM} -t ${COVERALLS_REPO_TOKEN} -j coverage.rspamd-test.dump -j coverage.functional.dump -m --root=../project
+              # collect C coverage
+              coveralls --lcov-file coverage.info --dump coveralls.dump
+              # collect Lua coverage (from luacov.stats.out) and merge it with C-coverage (in coveralls.dump)
+              # and functional tests coverage (collected into lua_coverage_report.json)
+              # and finally upload it into coveralls.io
+              luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coveralls.dump -j lua_coverage_report.json -m --root=../project
             fi
         fi
 
@@ -116,6 +121,7 @@ jobs:
       - run: sudo pip install demjson psutil robotframework requests http
       - run: sudo luarocks install luacheck
       - run: sudo luarocks install luacov
+      - run: sudo luarocks install luacov-coveralls
 
       - run: cd ../build
       - run: set +e; RSPAMD_INSTALLROOT=../install sudo -E robot -x xunit.xml --exclude isbroken ../project/test/functional/cases; echo "export RETURN_CODE=$?" >> $BASH_ENV
@@ -127,7 +133,7 @@ jobs:
           key: coverage-functional-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - coverage.functional.info
-            - coverage.functional.dump
+            - lua_coverage_report.json
 
       - store_artifacts:
           path: output.xml
