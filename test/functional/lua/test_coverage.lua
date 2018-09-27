@@ -34,7 +34,7 @@ local mt = {
   __gc = function()
   --[[
   -- We could've used finish_script but in that case some coverage would be missed:
-  -- pool destructors are executed after finish_scripts (when Lua state is terminated and that's 
+  -- pool destructors are executed after finish_scripts (when Lua state is terminated and that's
   -- how we can collect coverage of cove executed there
   --]]
     if woker_name then
