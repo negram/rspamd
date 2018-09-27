@@ -85,6 +85,7 @@ jobs:
       - run: sudo apt-get install -qq cmake libevent-dev libglib2.0-dev libicu-dev libluajit-5.1-dev libmagic-dev libsqlite3-dev libssl-dev ragel libunwind-dev libunwind8 luarocks
       - run: sudo luarocks install luacheck
       - run: sudo luarocks install luacov
+      - run: sudo luarocks install luacov-coveralls
 
       - run: cd ../build
       - run: make rspamd-test -j`nproc`
