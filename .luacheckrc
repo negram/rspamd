@@ -61,3 +61,7 @@ files['/**/src/rspamadm/*'].globals = {
   'ansicolors',
   'getopt',
 }
+
+files['test/functional/lua/test_coverage.lua'].globals = {
+  '__GLOBAL_COVERAGE_WATCHDOG'
+}
