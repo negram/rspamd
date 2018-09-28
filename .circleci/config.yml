@@ -18,7 +18,7 @@ references:
         # further, these files will be saved in cache and used in "send-coverage" step
         # see "merge_and_upload_coverage_data" and "save_cache" records
         # lcov --no-external -b ../project -d ../project -c --output-file coverage.${CIRCLE_JOB}.info
-        coveralls --dump coverage.${CIRCLE_JOB}.dump
+        coveralls --gcov /usr/bin/gcov-8 --dump coverage.${CIRCLE_JOB}.dump
         
 
   - &capture_lua_coverage_data
@@ -66,10 +66,9 @@ jobs:
       - run: sudo apt-get update -qq || true
       - run: sudo apt-get install -qq cmake libevent-dev libglib2.0-dev libicu-dev libluajit-5.1-dev libmagic-dev libsqlite3-dev libssl-dev ragel libunwind-dev libunwind8
       - run: sudo apt-get install -qq software-properties-common
-      
+
       - run: sudo apt-get install -qq build-essential software-properties-common -y
       - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-      # - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/ppa/ubuntu trusty main'
       - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
       - run: sudo apt-get install gcc-8
 
@@ -96,6 +95,11 @@ jobs:
       - run: sudo luarocks install luacheck
       - run: sudo luarocks install luacov
       - run: sudo luarocks install luacov-coveralls
+
+      - run: sudo apt-get install -qq build-essential software-properties-common -y
+      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
+      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
+      - run: sudo apt-get install gcc-8
 
       - run: cd ../build
       - run: make rspamd-test -j`nproc`
