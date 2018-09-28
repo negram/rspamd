@@ -842,7 +842,7 @@ ENDIF(NOT CMAKE_C_OPT_FLAGS)
 
 IF(ENABLE_COVERAGE)
 	SET(CMAKE_C_OPT_FLAGS "-g -O0 -fno-strict-aliasing")
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -ftest-coverage")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWITH_COVERAGE=1 --coverage -ftest-coverage")
 	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage -ftest-coverage")
 ENDIF(ENABLE_COVERAGE)
 
