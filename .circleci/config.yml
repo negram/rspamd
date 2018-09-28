@@ -71,10 +71,10 @@ jobs:
       - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
       # - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/ppa/ubuntu trusty main'
       - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-      - run: sudo apt-get install gcc-8 g++-8
+      - run: sudo apt-get install gcc-8
 
       - run: mkdir ../build ; mkdir ../install ; cd ../build
-      - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_C_COMPILER=gcc-8
+      - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install -D_GLIBCXX_USE_CXX11_ABI=0 -DCMAKE_C_COMPILER=gcc-8
 
       - run: make install -j`nproc`
 
