@@ -41,6 +41,7 @@ references:
             sudo apt-get install -qq lcov
             sudo apt-get install -qq python-pip luarocks
             sudo luarocks install luacov-coveralls
+            sudo pip install cpp-coveralls requests
 
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
