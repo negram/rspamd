@@ -74,7 +74,7 @@ jobs:
       - run: sudo apt-get install gcc-8 g++-8
 
       - run: mkdir ../build ; mkdir ../install ; cd ../build
-      - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_C_COMPILER=gcc-7
+      - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_C_COMPILER=gcc-8
 
       - run: make install -j`nproc`
 
