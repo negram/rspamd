@@ -65,6 +65,7 @@ jobs:
 
       - run: sudo apt-get update -qq || true
       - run: sudo apt-get install -qq cmake libevent-dev libglib2.0-dev libicu-dev libluajit-5.1-dev libmagic-dev libsqlite3-dev libssl-dev ragel libunwind-dev libunwind8
+      - run: sudo apt-get install -qq software-properties-common
       - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       - run: sudo apt-get update -qq
       - run: sudo apt-get install gcc-8 g++-8
