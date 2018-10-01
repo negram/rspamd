@@ -18,7 +18,7 @@ references:
         # further, these files will be saved in cache and used in "send-coverage" step
         # see "merge_and_upload_coverage_data" and "save_cache" records
         # lcov --no-external -b ../project -d ../project -c --output-file coverage.${CIRCLE_JOB}.info
-        coveralls --gcov /usr/bin/gcov-8 --dump coverage.${CIRCLE_JOB}.dump
+        coveralls --dump coverage.${CIRCLE_JOB}.dump
         
 
   - &capture_lua_coverage_data
@@ -45,10 +45,10 @@ references:
             sudo pip install --upgrade pyOpenSSL
             sudo pip install cpp-coveralls requests cryptography
 
-             sudo apt-get install -qq build-essential software-properties-common -y
-             sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-             sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-             sudo apt-get install gcc-8
+#             sudo apt-get install -qq build-essential software-properties-common -y
+#             sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
+#             sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
+#             sudo apt-get install gcc-8
 
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
@@ -70,16 +70,16 @@ jobs:
 
       - run: sudo apt-get update -qq || true
       - run: sudo apt-get install -qq cmake libevent-dev libglib2.0-dev libicu-dev libluajit-5.1-dev libmagic-dev libsqlite3-dev libssl-dev ragel libunwind-dev libunwind8
-      - run: sudo apt-get install -qq software-properties-common
 
-      - run: sudo apt-get install -qq build-essential software-properties-common -y
-      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-      - run: sudo apt-get install gcc-8
+#      - run: sudo apt-get install -qq software-properties-common
+#      - run: sudo apt-get install -qq build-essential software-properties-common -y
+#      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
+#      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
+#       - run: sudo apt-get install gcc-8
 
       - run: mkdir ../build ; mkdir ../install ; cd ../build
       - run: umask 0000
-      - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install -D_GLIBCXX_USE_CXX11_ABI=0 -DCMAKE_C_COMPILER=gcc-8
+      - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install
 
       - run: make install -j`nproc`
 
@@ -102,10 +102,10 @@ jobs:
       - run: sudo luarocks install luacov
       - run: sudo luarocks install luacov-coveralls
 
-      - run: sudo apt-get install -qq build-essential software-properties-common -y
-      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-      - run: sudo apt-get install gcc-8
+#      - run: sudo apt-get install -qq build-essential software-properties-common -y
+#      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
+#      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
+#      - run: sudo apt-get install gcc-8
 
       - run: cd ../build
       - run: make rspamd-test -j`nproc`
@@ -143,14 +143,14 @@ jobs:
       - run: sudo luarocks install luacov
       - run: sudo luarocks install luacov-coveralls
 
-      - run: sudo apt-get install -qq build-essential software-properties-common -y
-      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-      - run: sudo apt-get install gcc-8
+#      - run: sudo apt-get install -qq build-essential software-properties-common -y
+#      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
+#      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
+#      - run: sudo apt-get install gcc-8
 
       - run: cd ../build
       - run: umask 0000
-      - run: set +e; RSPAMD_INSTALLROOT=../install sudo -E robot -x xunit.xml --exclude isbroken ../project/test/functional/cases; echo "export RETURN_CODE=$?" >> $BASH_ENV
+      - run: set +e; RSPAMD_INSTALLROOT=../install sudo -E bash -c "umask 0000; robot -x xunit.xml --exclude isbroken ../project/test/functional/cases"; echo "export RETURN_CODE=$?" >> $BASH_ENV
 
       - *capture_coverage_data
 
