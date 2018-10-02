@@ -5,6 +5,21 @@ import json
 import os
 import requests
 
+
+# install path to repository mapping
+# if path mapped to None, it means that the file should be ignored (i.e. test file/helper)
+# first matched path counts
+path_mapping = {
+    "/home/circleci/install/share/rspamd/lib/fun.lua": None,
+    "/home/circleci/install/share/rspamd/lib": "lualib",
+    "/home/circleci/install/share/rspamd/rules" : "rules",
+    "/home/circleci/project/test/lua": None,
+    "/home/circleci/project/clang-plugin": None,
+    "/home/circleci/project/test": None,
+    "/home/circleci/project/CMakeFiles": None,
+    "/home/circleci/project/contrib": None,
+}
+
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--input', type=open, nargs='+', help='input files')
 parser.add_argument('--output', type=str, required=True, help='output file)')
@@ -33,6 +48,14 @@ def normalize_name(name):
     name = os.path.normpath(name)
     if not os.path.isabs(name):
         name = os.path.abspath(repository_root + name)
+    for k in path_mapping.keys():
+        if name.startswith(k):
+            if path_mapping[k] is None:
+                return None
+            else:
+                # TODO: move repository_root to mapping
+                name = name.replace(k, path_mapping[k])
+                return name
     name = name.replace(repository_root, '')
     return name
 
