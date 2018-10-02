@@ -68,6 +68,11 @@ if __name__ == '__main__':
             j1['service_name'] = j2['service_name']
         if 'service_job_id' not in j1 and 'service_job_id' in j2:
             j1['service_job_id'] = j2['service_job_id']
+        if not j1['service_job_id']:
+            j1['service_job_id'] = os.environ['CIRCLE_BUILD_NUM']
+        if os.environ['CIRCLECI']:
+            j1['service_name'] = 'circleci'
+
     j1['source_files'] = files.values()
 
     with open(args.output, 'w') as f:
