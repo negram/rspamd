@@ -17,14 +17,6 @@ references:
         # further, these files will be saved in cache and used in "send-coverage" step
         # see "merge_and_upload_coverage_data" and "save_cache" records
         coveralls --dump coverage.${CIRCLE_JOB}.dump
-        
-
-  - &capture_lua_coverage_data
-    run:
-      name: Capturing Lua coverage data
-      command: |
-        set -e
-        if [ ! -z $COVERALLS_REPO_TOKEN ]; then luacov-coveralls -t ${COVERALLS_REPO_TOKEN} || true; fi
 
   - &restore_coverage_data
     restore_cache:
