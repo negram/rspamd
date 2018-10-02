@@ -695,8 +695,5 @@ start_worker (struct rspamd_worker *worker)
 	REF_RELEASE (ctx->cfg);
 	rspamd_log_close (worker->srv->logger, TRUE);
 
-#ifdef WITH_COVERAGE
-	__gcov_flush();
-#endif
 	exit (EXIT_SUCCESS);
 }
