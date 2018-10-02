@@ -17,21 +17,21 @@ path_mapping = [
     ("${install-dir}/share/rspamd/lib/torch/" , None),
     ("${build-dir}/CMakeFiles/", None),
     ("${build-dir}/contrib/", None),
-    ("contrib/", None),
-    ("CMakeFiles/", None),
+    ("${build-dir}/test", None),
     ("${project-root}/test/lua/", None),
-    ("${project-root}/clang-plugin/", None),
     ("${project-root}/test/", None),
+    ("${project-root}/clang-plugin/", None),
     ("${project-root}/CMakeFiles/", None),
     ("${project-root}/contrib/", None),
     ("${project-root}/", ""),
-    ("${build-dir}/test", None),
+    ("contrib/", None),
+    ("CMakeFiles/", None),
 ]
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--input', type=open, required=True, nargs='+', help='input files')
 parser.add_argument('--output', type=str, required=True, help='output file)')
-parser.add_argument('--root', type=str, required=True, help='repository root)')
+parser.add_argument('--root', type=str, required=False, default="/home/circleci/project", help='repository root)')
 parser.add_argument('--install-dir', type=str, required=False, default="/home/circleci/install", help='install root)')
 parser.add_argument('--build-dir', type=str, required=False, default="/home/circleci/build", help='build root)')
 parser.add_argument('--token', type=str, help='If present, the file will be uploaded to coveralls)')
@@ -63,7 +63,6 @@ def normalize_name(name):
             if k[1] is None:
                 return None
             else:
-                # TODO: move repository_root to mapping
                 name = name.replace(k[0], k[1])
     return name
 
