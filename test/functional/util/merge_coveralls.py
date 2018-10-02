@@ -58,7 +58,7 @@ def normalize_name(name):
     orig_name = name
     name = os.path.normpath(name)
     if not os.path.isabs(name):
-        name = os.path.abspath(repository_root + name)
+        name = os.path.abspath(repository_root + "/" + name)
     for k in path_mapping:
         if name.startswith(k[0]):
             if k[1] is None:
@@ -66,6 +66,7 @@ def normalize_name(name):
             else:
                 print "rewrite '%s' using prefix '%s'" % (name, k[0])
                 name = name.replace(k[0], k[1])
+                break
     if orig_name != name:
         print "replaced '%s' with '%s'" % (orig_name, name)
     return name
