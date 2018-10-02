@@ -64,11 +64,8 @@ def normalize_name(name):
             if k[1] is None:
                 return None
             else:
-                print "rewrite '%s' using prefix '%s'" % (name, k[0])
-                name = name.replace(k[0], k[1])
+                name = k[1] + name[len(k[0]):]
                 break
-    if orig_name != name:
-        print "replaced '%s' with '%s'" % (orig_name, name)
     return name
 
 def merge(files, j1):
@@ -135,6 +132,7 @@ if __name__ == '__main__':
         r = requests.post('https://coveralls.io/api/v1/jobs', files={"json_file": json.dumps(j1)})
         response = json.loads(r.text)
         print "uploaded %s\nmessage:%s" % (response['url'], response['message'])
+
     # post https://coveralls.io/api/v1/jobs
     # print args
 

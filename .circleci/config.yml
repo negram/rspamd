@@ -163,14 +163,6 @@ jobs:
           key: coverage-rspamd-test-{{ .Environment.CIRCLE_WORKFLOW_ID }}
       - restore_cache:
           key: coverage-functional-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-      - store_artifacts:
-          path: coverage.functional.dump
-      - store_artifacts:
-          path: coverage.functional.info
-      - store_artifacts:
-          path: coverage.rspamd-test.dump
-      - store_artifacts:
-          path: coverage.functional.dump
 
       - *merge_and_upload_coverage_data
 
