@@ -11,13 +11,11 @@ references:
       name: Capturing coverage data
       command: |
         set -e
-        sudo apt-get install -qq lcov python-pip
-        gem install coveralls-lcov
+        sudo apt-get install -qq python-pip
         sudo pip install cpp-coveralls
         
         # further, these files will be saved in cache and used in "send-coverage" step
         # see "merge_and_upload_coverage_data" and "save_cache" records
-        # lcov --no-external -b ../project -d ../project -c --output-file coverage.${CIRCLE_JOB}.info
         coveralls --dump coverage.${CIRCLE_JOB}.dump
         
 
@@ -38,9 +36,6 @@ references:
       command: |
         set -e
         if [ -f ~/project/coverage.rspamd-test.dump ] && [ -f ~/project/coverage.functional.dump ]; then
-            sudo apt-get install -qq lcov
-            sudo apt-get install -qq python-pip luarocks
-            sudo luarocks install luacov-coveralls
             sudo pip install --upgrade setuptools
             sudo pip install --upgrade pyOpenSSL
             sudo pip install cpp-coveralls requests cryptography
@@ -48,10 +43,9 @@ references:
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
               # collect C coverage
-              # collect Lua coverage (from luacov.stats.out) and merge it with C-coverage (in coveralls.dump)
-              # and functional tests coverage (collected into lua_coverage_report.json)
+              # Merge Lua coverage (collected into lua_coverage_report.json) and with C-coverage 
+              # (in coverage.rspamd-test.dump, coverage.functional.dump)
               # and finally upload it into coveralls.io
-              # luacov-coveralls -t ${COVERALLS_REPO_TOKEN} -j coverage.functional.dump -j coverage.rspamd-test.dump -j lua_coverage_report.json -m --root=../project
               test/functional/util/merge_coveralls.py --input coverage.functional.dump coverage.rspamd-test.dump lua_coverage_report.json unit_test_lua.json --output out.josn --root ../project --token=${COVERALLS_REPO_TOKEN} 
             fi
         fi
@@ -66,13 +60,9 @@ jobs:
       - run: sudo apt-get update -qq || true
       - run: sudo apt-get install -qq cmake libevent-dev libglib2.0-dev libicu-dev libluajit-5.1-dev libmagic-dev libsqlite3-dev libssl-dev ragel libunwind-dev libunwind8
 
-#      - run: sudo apt-get install -qq software-properties-common
-#      - run: sudo apt-get install -qq build-essential software-properties-common -y
-#      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-#      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-#       - run: sudo apt-get install gcc-8
-
       - run: mkdir ../build ; mkdir ../install ; cd ../build
+      # this weird peice is needed to properly collect coverage
+      # rspamd works under "nobody" user and will not be able to dump coverage if directories have restrictive permissions
       - run: umask 0000
       - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install
 
@@ -97,18 +87,12 @@ jobs:
       - run: sudo luarocks install luacov
       - run: sudo luarocks install luacov-coveralls
 
-#      - run: sudo apt-get install -qq build-essential software-properties-common -y
-#      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-#      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-#      - run: sudo apt-get install gcc-8
-
       - run: cd ../build
       - run: make rspamd-test -j`nproc`
       - run: set +e; test/rspamd-test -p /rspamd/lua; echo "export RETURN_CODE=$?" >> $BASH_ENV
       - run: luacov-coveralls -o unit_test_lua.json --dryrun
 
       - *capture_coverage_data
-      #- *capture_lua_coverage_data
 
       # Share coverage data between jobs
       - save_cache:
@@ -116,7 +100,6 @@ jobs:
           paths:
             - coverage.rspamd-test.dump
             - unit_test_lua.json
-      - run: find ~ \( -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' \) -ls | tee find.out
 
       - run: (exit $RETURN_CODE)
 
@@ -138,13 +121,8 @@ jobs:
       - run: sudo luarocks install luacov
       - run: sudo luarocks install luacov-coveralls
 
-#      - run: sudo apt-get install -qq build-essential software-properties-common -y
-#      - run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-#      - run: sudo add-apt-repository --update 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main'
-#      - run: sudo apt-get install gcc-8
-
       - run: cd ../build
-      - run: umask 0000
+      # see coverage notice in "build" stage
       - run: set +e; RSPAMD_INSTALLROOT=../install sudo -E bash -c "umask 0000; robot -x xunit.xml --exclude isbroken ../project/test/functional/cases"; echo "export RETURN_CODE=$?" >> $BASH_ENV
 
       - *capture_coverage_data
