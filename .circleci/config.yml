@@ -36,13 +36,13 @@ references:
       command: |
         set -e
         if [ -f ~/project/coverage.rspamd-test.dump ] && [ -f ~/project/coverage.functional.dump ]; then
+            sudo apt-get install -qq python-pip python-dev
             sudo pip install --upgrade setuptools
             sudo pip install --upgrade pyOpenSSL
             sudo pip install cpp-coveralls requests cryptography
 
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
-              # collect C coverage
               # Merge Lua coverage (collected into lua_coverage_report.json) and with C-coverage 
               # (in coverage.rspamd-test.dump, coverage.functional.dump)
               # and finally upload it into coveralls.io
@@ -62,7 +62,8 @@ jobs:
 
       - run: mkdir ../build ; mkdir ../install ; cd ../build
       # this weird peice is needed to properly collect coverage
-      # rspamd works under "nobody" user and will not be able to dump coverage if directories have restrictive permissions
+      # rspamd works under "nobody" user and will not be able to dump  
+      # the coverage if directories have restrictive permissions
       - run: umask 0000
       - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install
 
