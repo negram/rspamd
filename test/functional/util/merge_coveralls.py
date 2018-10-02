@@ -8,22 +8,32 @@ import requests
 
 # install path to repository mapping
 # if path mapped to None, it means that the file should be ignored (i.e. test file/helper)
-# first matched path counts
+# first matched path counts.
+# terminating slash should be added for directories 
 path_mapping = {
-    "/home/circleci/install/share/rspamd/lib/fun.lua": None,
-    "/home/circleci/install/share/rspamd/lib": "lualib",
-    "/home/circleci/install/share/rspamd/rules" : "rules",
-    "/home/circleci/project/test/lua": None,
-    "/home/circleci/project/clang-plugin": None,
-    "/home/circleci/project/test": None,
-    "/home/circleci/project/CMakeFiles": None,
-    "/home/circleci/project/contrib": None,
+    "${install-dir}/share/rspamd/lib/fun.lua": None,
+    "${install-dir}/share/rspamd/lib/": "lualib/",
+    "${install-dir}/share/rspamd/rules/" : "rules/",
+    "${install-dir}/share/rspamd/lib/torch/" : None,
+    "${build-dir}/CMakeFiles/" : None,
+    "${build-dir}/contrib/" : None,
+    "contrib/" : None,
+    "CMakeFiles/" : None,
+    "${project-root}/test/lua/": None,
+    "${project-root}/clang-plugin/": None,
+    "${project-root}/test/": None,
+    "${project-root}/CMakeFiles/": None,
+    "${project-root}/contrib/": None,
+    "${project-root}/": "",
+    "${build-dir}/test": None,
 }
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--input', type=open, nargs='+', help='input files')
+parser.add_argument('--input', type=open, required=True, nargs='+', help='input files')
 parser.add_argument('--output', type=str, required=True, help='output file)')
 parser.add_argument('--root', type=str, required=True, help='repository root)')
+parser.add_argument('--install-dir', type=str, required=False, default="/home/circleci/install", help='install root)')
+parser.add_argument('--build-dir', type=str, required=False, default="/home/circleci/build", help='build root)')
 parser.add_argument('--token', type=str, help='If present, the file will be uploaded to coveralls)')
 
 def merge_coverage_vectors(c1, c2):
@@ -62,6 +72,9 @@ def normalize_name(name):
 def merge(files, j1):
     for sf in j1['source_files']:
         name = normalize_name(sf['name'])
+        if name is None:
+            print "skip", sf['name']
+            continue
         if name in files:
             files[name]['coverage'] = merge_coverage_vectors(files[name]['coverage'], sf['coverage'])
         else:
@@ -75,11 +88,30 @@ def merge(files, j1):
 
     return files
 
+def prepare_path_mapping():
+    keys = path_mapping.keys()
+    for k in keys:
+        value = path_mapping[k]
+        del path_mapping[k]
+        new_key = k.replace("${install-dir}", install_dir)
+        new_key = new_key.replace("${project-root}", repository_root)
+        new_key = new_key.replace("${build-dir}", build_dir)
+                    
+        path_mapping[new_key] = value
+
 if __name__ == '__main__':
     args = parser.parse_args()
-    repository_root = os.path.abspath(args.root)
+
+    repository_root = os.path.abspath(os.path.expanduser(args.root))
+    install_dir = os.path.normpath(os.path.expanduser(args.install_dir))
+    build_dir = os.path.normpath(os.path.expanduser(args.build_dir))
+
+    prepare_path_mapping()
+
+    print path_mapping
+
     j1 = json.loads(args.input[0].read())
-    
+
     files = merge({}, j1)
     for i in xrange(1, len(args.input)):
         j2 = json.loads(args.input[i].read())
@@ -91,9 +123,9 @@ if __name__ == '__main__':
             j1['service_name'] = j2['service_name']
         if 'service_job_id' not in j1 and 'service_job_id' in j2:
             j1['service_job_id'] = j2['service_job_id']
-        if not j1['service_job_id']:
+        if not j1['service_job_id'] and 'CIRCLE_BUILD_NUM' in os.environ:
             j1['service_job_id'] = os.environ['CIRCLE_BUILD_NUM']
-        if os.environ['CIRCLECI']:
+        if 'CIRCLECI' in os.environ and os.environ['CIRCLECI']:
             j1['service_name'] = 'circleci'
 
     j1['source_files'] = files.values()
