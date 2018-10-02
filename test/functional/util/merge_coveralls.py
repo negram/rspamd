@@ -55,6 +55,7 @@ def merge_coverage_vectors(c1, c2):
 
 
 def normalize_name(name):
+    orig_name = name
     name = os.path.normpath(name)
     if not os.path.isabs(name):
         name = os.path.abspath(repository_root + name)
@@ -63,7 +64,10 @@ def normalize_name(name):
             if k[1] is None:
                 return None
             else:
+                print "rewrite '%s' using prefix '%s'" % (name, k[0])
                 name = name.replace(k[0], k[1])
+    if orig_name != name:
+        print "replaced '%s' with '%s'" % (orig_name, name)
     return name
 
 def merge(files, j1):
