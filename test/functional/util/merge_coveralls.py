@@ -10,23 +10,23 @@ import requests
 # if path mapped to None, it means that the file should be ignored (i.e. test file/helper)
 # first matched path counts.
 # terminating slash should be added for directories 
-path_mapping = {
-    "${install-dir}/share/rspamd/lib/fun.lua": None,
-    "${install-dir}/share/rspamd/lib/": "lualib/",
-    "${install-dir}/share/rspamd/rules/" : "rules/",
-    "${install-dir}/share/rspamd/lib/torch/" : None,
-    "${build-dir}/CMakeFiles/" : None,
-    "${build-dir}/contrib/" : None,
-    "contrib/" : None,
-    "CMakeFiles/" : None,
-    "${project-root}/test/lua/": None,
-    "${project-root}/clang-plugin/": None,
-    "${project-root}/test/": None,
-    "${project-root}/CMakeFiles/": None,
-    "${project-root}/contrib/": None,
-    "${project-root}/": "",
-    "${build-dir}/test": None,
-}
+path_mapping = [
+    ("${install-dir}/share/rspamd/lib/fun.lua", None),
+    ("${install-dir}/share/rspamd/lib/", "lualib/"),
+    ("${install-dir}/share/rspamd/rules/" , "rules/"),
+    ("${install-dir}/share/rspamd/lib/torch/" , None),
+    ("${build-dir}/CMakeFiles/", None),
+    ("${build-dir}/contrib/", None),
+    ("contrib/", None),
+    ("CMakeFiles/", None),
+    ("${project-root}/test/lua/", None),
+    ("${project-root}/clang-plugin/", None),
+    ("${project-root}/test/", None),
+    ("${project-root}/CMakeFiles/", None),
+    ("${project-root}/contrib/", None),
+    ("${project-root}/", ""),
+    ("${build-dir}/test", None),
+]
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--input', type=open, required=True, nargs='+', help='input files')
@@ -58,22 +58,19 @@ def normalize_name(name):
     name = os.path.normpath(name)
     if not os.path.isabs(name):
         name = os.path.abspath(repository_root + name)
-    for k in path_mapping.keys():
-        if name.startswith(k):
-            if path_mapping[k] is None:
+    for k in path_mapping:
+        if name.startswith(k[0]):
+            if k[1] is None:
                 return None
             else:
                 # TODO: move repository_root to mapping
-                name = name.replace(k, path_mapping[k])
-                return name
-    name = name.replace(repository_root, '')
+                name = name.replace(k[0], k[1])
     return name
 
 def merge(files, j1):
     for sf in j1['source_files']:
         name = normalize_name(sf['name'])
         if name is None:
-            print "skip", sf['name']
             continue
         if name in files:
             files[name]['coverage'] = merge_coverage_vectors(files[name]['coverage'], sf['coverage'])
@@ -89,15 +86,12 @@ def merge(files, j1):
     return files
 
 def prepare_path_mapping():
-    keys = path_mapping.keys()
-    for k in keys:
-        value = path_mapping[k]
-        del path_mapping[k]
-        new_key = k.replace("${install-dir}", install_dir)
+    for i in xrange(0, len(path_mapping)):
+        new_key = path_mapping[i][0].replace("${install-dir}", install_dir)
         new_key = new_key.replace("${project-root}", repository_root)
         new_key = new_key.replace("${build-dir}", build_dir)
                     
-        path_mapping[new_key] = value
+        path_mapping[i] = (new_key, path_mapping[i][1])
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -107,8 +101,6 @@ if __name__ == '__main__':
     build_dir = os.path.normpath(os.path.expanduser(args.build_dir))
 
     prepare_path_mapping()
-
-    print path_mapping
 
     j1 = json.loads(args.input[0].read())
 
