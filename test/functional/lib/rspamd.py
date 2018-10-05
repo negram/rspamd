@@ -300,6 +300,11 @@ def collect_lua_coverage():
         logger.info("luacov-coveralls not found, will not collect Lua coverage")
         return
 
+    # decided not to do optional coverage so far
+    #if not 'ENABLE_LUA_COVERAGE' in os.environ['HOME']:
+    #    logger.info("ENABLE_LUA_COVERAGE is not present in env, will not collect Lua coverage")
+    #    return
+
     current_directory = os.getcwd()
     report_file = current_directory + "/lua_coverage_report.json"
     old_report = current_directory + "/lua_coverage_report.json.old"
