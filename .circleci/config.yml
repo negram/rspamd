@@ -13,7 +13,7 @@ references:
         set -e
         sudo apt-get install -qq python-pip
         sudo pip install cpp-coveralls
-        
+
         # further, these files will be saved in cache and used in "send-coverage" step
         # see "merge_and_upload_coverage_data" and "save_cache" records
         coveralls --dump coverage.${CIRCLE_JOB}.dump
@@ -31,10 +31,10 @@ references:
 
             cd ~/project
             if [ ! -z $COVERALLS_REPO_TOKEN ]; then
-              # Merge Lua coverage (collected into lua_coverage_report.json) and with C-coverage 
+              # Merge Lua coverage (collected into lua_coverage_report.json) and with C-coverage
               # (in coverage.rspamd-test.dump, coverage.functional.dump, see &capture_coverage_data)
               # and finally upload it into coveralls.io
-              test/functional/util/merge_coveralls.py --input coverage.functional.dump coverage.rspamd-test.dump lua_coverage_report.json unit_test_lua.json --output out.josn --token=${COVERALLS_REPO_TOKEN} 
+              test/functional/util/merge_coveralls.py --input coverage.functional.dump coverage.rspamd-test.dump lua_coverage_report.json unit_test_lua.json --output out.josn --token=${COVERALLS_REPO_TOKEN}
             fi
         fi
 
@@ -50,7 +50,7 @@ jobs:
 
       - run: mkdir ../build ; mkdir ../install ; cd ../build
       # this weird peice is needed to properly collect coverage
-      # rspamd works under "nobody" user and will not be able to dump  
+      # rspamd works under "nobody" user and will not be able to dump
       # the coverage if directories have restrictive permissions
       - run: umask 0000
       - run: cmake ../project -DDBDIR=/nana -DENABLE_COVERAGE=ON -DENABLE_LIBUNWIND=ON -DCMAKE_INSTALL_PREFIX=../install
@@ -133,7 +133,6 @@ jobs:
       - run: mkdir -p test-results; mv xunit.xml test-results
       - store_test_results:
           path: test-results
-      - run: find ~ \( -name '*.gcda' -o -name '*.gcno' -o -name '*.gcov' \) -ls | tee find.out
 
       - run: (exit $RETURN_CODE)
 
